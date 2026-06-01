@@ -1,5 +1,6 @@
 package userservice.ui;
 
+import lombok.NonNull;
 import userservice.constants.Messages;
 import userservice.entity.UserEntity;
 
@@ -35,7 +36,7 @@ public final class ConsolePrinter {
      *
      * @param userEntity пользователь
      */
-    public void printUser(UserEntity userEntity) {
+    public void printUser(@NonNull UserEntity userEntity) {
         line();
         System.out.println("Пользователь");
         line();
@@ -52,7 +53,7 @@ public final class ConsolePrinter {
      *
      * @param usersEntities список пользователей
      */
-    public void printUsers(List<UserEntity> usersEntities) {
+    public void printUsers(@NonNull List<UserEntity> usersEntities) {
         if (usersEntities.isEmpty()) {
             printInfo(Messages.USER_LIST_EMPTY);
             return;

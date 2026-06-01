@@ -49,7 +49,7 @@ docker compose up -d
 Контейнер создаёт PostgreSQL со значениями по умолчанию:
 
 ```text
-DB_URL=jdbc:postgresql://localhost:5432/user_service_db
+DB_URL=jdbc:postgresql://localhost:5434/user_service_db
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
 ```
@@ -92,7 +92,7 @@ mvn clean test exec:java
 ### Windows PowerShell
 
 ```powershell
-$env:DB_URL="jdbc:postgresql://localhost:5432/user_service_db"
+$env:DB_URL="jdbc:postgresql://localhost:5434/user_service_db"
 $env:DB_USERNAME="postgres"
 $env:DB_PASSWORD="postgres"
 mvn clean test exec:java
@@ -112,7 +112,7 @@ CREATE DATABASE user_service_db;
 
 ```bash
 mvn exec:java \
-  -Ddb.url="jdbc:postgresql://localhost:5432/user_service_db" \
+  -Ddb.url="jdbc:postgresql://localhost:5434/user_service_db" \
   -Ddb.username="postgres" \
   -Ddb.password="postgres"
 ```

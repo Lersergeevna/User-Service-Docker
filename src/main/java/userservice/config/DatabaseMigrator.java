@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import userservice.constants.Messages;
 import userservice.exception.ApplicationStartupException;
 
-// Выполняет миграции базы данных при запуске приложения.
+/**
+ * Выполняет миграции базы данных при запуске приложения.
+ */
 public final class DatabaseMigrator {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseMigrator.class);
     private static final String MIGRATIONS_LOCATION = "classpath:db/migration";
@@ -14,7 +16,9 @@ public final class DatabaseMigrator {
     private DatabaseMigrator() {
     }
 
-    // Применяет миграции Flyway к целевой базе данных.
+    /**
+     * Применяет миграции Flyway к целевой базе данных.
+     */
     public static void migrate() {
         try {
             Flyway flyway = Flyway.configure()

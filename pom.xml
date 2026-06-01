@@ -12,16 +12,22 @@
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
+        <lombok.version>1.18.46</lombok.version>
         <hibernate.version>6.6.45.Final</hibernate.version>
         <postgresql.version>42.7.10</postgresql.version>
         <flyway.version>12.1.0</flyway.version>
         <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.32</logback.version>
-
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
@@ -57,7 +63,6 @@
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -67,9 +72,15 @@
                 <version>3.14.1</version>
                 <configuration>
                     <release>${maven.compiler.release}</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
-
 
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -99,7 +110,6 @@
                     <mainClass>userservice.Main</mainClass>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 </project>

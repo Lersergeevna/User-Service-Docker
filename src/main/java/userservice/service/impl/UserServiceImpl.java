@@ -1,5 +1,6 @@
 package userservice.service.impl;
 
+import lombok.NonNull;
 import userservice.constants.Messages;
 import userservice.dao.UserDao;
 import userservice.dao.impl.UserDaoImpl;
@@ -16,7 +17,6 @@ import userservice.util.ExceptionUtils;
 import userservice.util.Validators;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Реализация сервисного слоя для работы с пользователями.
@@ -36,8 +36,8 @@ public class UserServiceImpl implements UserService {
      *
      * @param userDao DAO для работы с пользователями
      */
-    public UserServiceImpl(UserDao userDao) {
-        this.userDao = Objects.requireNonNull(userDao, "userDao must not be null");
+    public UserServiceImpl(@NonNull UserDao userDao) {
+        this.userDao = userDao;
     }
 
     /**

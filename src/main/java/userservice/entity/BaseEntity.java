@@ -6,12 +6,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 /**
  * Базовый суперкласс для сущностей с идентификатором и временем создания.
  */
+@Getter
 @MappedSuperclass
 public abstract class BaseEntity {
     @Id
@@ -29,13 +31,5 @@ public abstract class BaseEntity {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
     }
 }

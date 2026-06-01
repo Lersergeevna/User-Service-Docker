@@ -1,5 +1,6 @@
 package userservice.dao;
 
+import lombok.NonNull;
 import userservice.entity.UserEntity;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public interface UserDao {
      * @param userEntity пользователь для сохранения
      * @return идентификатор сохранённого пользователя
      */
-    Long save(UserEntity userEntity);
+    Long save(@NonNull UserEntity userEntity);
 
     /**
      * Ищет пользователя по идентификатору.
@@ -23,7 +24,7 @@ public interface UserDao {
      * @param id идентификатор пользователя
      * @return найденный пользователь или пустой результат
      */
-    Optional<UserEntity> findById(Long id);
+    Optional<UserEntity> findById(@NonNull Long id);
 
     /**
      * Ищет пользователя по e-mail.
@@ -31,7 +32,7 @@ public interface UserDao {
      * @param email e-mail пользователя
      * @return найденный пользователь или пустой результат
      */
-    Optional<UserEntity> findByEmail(String email);
+    Optional<UserEntity> findByEmail(@NonNull String email);
 
     /**
      * Возвращает список всех пользователей.
@@ -53,7 +54,7 @@ public interface UserDao {
      * @param id идентификатор пользователя
      * @return true, если пользователь существует, иначе false
      */
-    boolean existsById(Long id);
+    boolean existsById(@NonNull Long id);
 
     /**
      * Обновляет данные пользователя.
@@ -61,7 +62,7 @@ public interface UserDao {
      * @param userEntity пользователь с новыми данными
      * @return обновлённый пользователь
      */
-    UserEntity update(UserEntity userEntity);
+    UserEntity update(@NonNull UserEntity userEntity);
 
     /**
      * Удаляет пользователя по идентификатору.
@@ -69,5 +70,5 @@ public interface UserDao {
      * @param id идентификатор пользователя
      * @return true, если пользователь удалён, иначе false
      */
-    boolean deleteById(Long id);
+    boolean deleteById(@NonNull Long id);
 }

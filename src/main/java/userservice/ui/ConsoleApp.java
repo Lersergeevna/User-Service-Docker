@@ -1,5 +1,6 @@
 package userservice.ui;
 
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import userservice.constants.Messages;
@@ -38,9 +39,9 @@ public final class ConsoleApp {
      * @param userService сервис пользователей
      * @param printer объект для вывода сообщений
      */
-    public ConsoleApp(UserService userService, ConsolePrinter printer) {
-        this.userService = java.util.Objects.requireNonNull(userService, "userService must not be null");
-        this.printer = java.util.Objects.requireNonNull(printer, "printer must not be null");
+    public ConsoleApp(@NonNull UserService userService, @NonNull ConsolePrinter printer) {
+        this.userService = userService;
+        this.printer = printer;
     }
 
     /**

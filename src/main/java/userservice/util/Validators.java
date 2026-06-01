@@ -6,7 +6,10 @@ import userservice.exception.InvalidInputException;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-// Содержит централизованные методы валидации пользовательских данных.
+/**
+ * Содержит централизованные методы валидации пользовательских данных.
+ */
+
 public final class Validators {
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");

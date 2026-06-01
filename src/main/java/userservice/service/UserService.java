@@ -1,5 +1,6 @@
 package userservice.service;
 
+import lombok.NonNull;
 import userservice.dto.UserCreateRequest;
 import userservice.dto.UserUpdateRequest;
 import userservice.entity.UserEntity;
@@ -16,7 +17,7 @@ public interface UserService {
      * @param request данные для создания
      * @return идентификатор созданного пользователя
      */
-    Long createUser(UserCreateRequest request);
+    Long createUser(@NonNull UserCreateRequest request);
 
     /**
      * Возвращает пользователя по идентификатору.
@@ -39,7 +40,7 @@ public interface UserService {
      * @param request данные для обновления
      * @return обновлённый пользователь
      */
-    UserEntity updateUser(UserUpdateRequest request);
+    UserEntity updateUser(@NonNull UserUpdateRequest request);
 
     /**
      * Удаляет пользователя по идентификатору.
@@ -68,5 +69,5 @@ public interface UserService {
      * @param email e-mail для проверки
      * @param currentUserId идентификатор текущего пользователя или null
      */
-    void ensureEmailAvailable(String email, Long currentUserId);
+    void ensureEmailAvailable(@NonNull String email, Long currentUserId);
 }

@@ -1,6 +1,8 @@
 package userservice.constants;
 
-// Содержит все пользовательские сообщения приложения в едином стиле.
+/**
+ * Содержит все пользовательские сообщения приложения в едином стиле.
+ */
 public final class Messages {
     public static final String APP_TITLE = "Сервис управления пользователями";
     public static final String CHOOSE_ACTION = "Выберите действие:";

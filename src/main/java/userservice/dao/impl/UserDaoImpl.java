@@ -1,5 +1,6 @@
 package userservice.dao.impl;
 
+import lombok.NonNull;
 import userservice.config.HibernateUtil;
 import userservice.constants.Messages;
 import userservice.dao.UserDao;
@@ -8,7 +9,6 @@ import userservice.exception.DataAccessException;
 import userservice.util.ExceptionUtils;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -19,8 +19,7 @@ public class UserDaoImpl implements UserDao {
      * {@inheritDoc}
      */
     @Override
-    public Long save(UserEntity userEntity) {
-        Objects.requireNonNull(userEntity, "userEntity must not be null");
+    public Long save(@NonNull UserEntity userEntity) {
         try {
             return HibernateUtil.executeInTransaction(session -> {
                 session.persist(userEntity);
@@ -35,7 +34,7 @@ public class UserDaoImpl implements UserDao {
      * {@inheritDoc}
      */
     @Override
-    public Optional<UserEntity> findById(Long id) {
+    public Optional<UserEntity> findById(@NonNull Long id) {
         try {
             return HibernateUtil.executeWithoutTransaction(
                     session -> Optional.ofNullable(session.get(UserEntity.class, id))
@@ -49,7 +48,7 @@ public class UserDaoImpl implements UserDao {
      * {@inheritDoc}
      */
     @Override
-    public Optional<UserEntity> findByEmail(String email) {
+    public Optional<UserEntity> findByEmail(@NonNull String email) {
         try {
             return HibernateUtil.executeWithoutTransaction(session ->
                     session.createQuery(
@@ -96,7 +95,7 @@ public class UserDaoImpl implements UserDao {
      * {@inheritDoc}
      */
     @Override
-    public boolean existsById(Long id) {
+    public boolean existsById(@NonNull Long id) {
         try {
             return HibernateUtil.executeWithoutTransaction(session ->
                     session.createSelectionQuery(
@@ -113,8 +112,7 @@ public class UserDaoImpl implements UserDao {
      * {@inheritDoc}
      */
     @Override
-    public UserEntity update(UserEntity userEntity) {
-        Objects.requireNonNull(userEntity, "userEntity must not be null");
+    public UserEntity update(@NonNull UserEntity userEntity) {
         try {
             return HibernateUtil.executeInTransaction(session -> session.merge(userEntity));
         } catch (RuntimeException e) {
@@ -126,7 +124,7 @@ public class UserDaoImpl implements UserDao {
      * {@inheritDoc}
      */
     @Override
-    public boolean deleteById(Long id) {
+    public boolean deleteById(@NonNull Long id) {
         try {
             return HibernateUtil.executeInTransaction(session -> {
                 UserEntity userEntity = session.get(UserEntity.class, id);

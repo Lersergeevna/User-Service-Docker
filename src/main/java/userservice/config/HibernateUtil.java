@@ -1,5 +1,6 @@
 package userservice.config;
 
+import lombok.NonNull;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -9,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import userservice.constants.Messages;
 import userservice.exception.ApplicationStartupException;
 
-import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -32,8 +32,7 @@ public final class HibernateUtil {
      * @param <T> тип результата
      * @return результат выполнения действия
      */
-    public static <T> T executeInTransaction(Function<Session, T> action) {
-        Objects.requireNonNull(action, "action must not be null");
+    public static <T> T executeInTransaction(@NonNull Function<Session, T> action) {
         Transaction transaction = null;
         try (Session session = getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
@@ -53,8 +52,7 @@ public final class HibernateUtil {
      * @param <T> тип результата
      * @return результат выполнения действия
      */
-    public static <T> T executeWithoutTransaction(Function<Session, T> action) {
-        Objects.requireNonNull(action, "action must not be null");
+    public static <T> T executeWithoutTransaction(@NonNull Function<Session, T> action) {
         try (Session session = getSessionFactory().openSession()) {
             return action.apply(session);
         }
