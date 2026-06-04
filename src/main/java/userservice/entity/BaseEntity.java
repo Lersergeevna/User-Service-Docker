@@ -11,7 +11,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 /**
- * Базовый суперкласс для сущностей с идентификатором и временем создания.
+ * Базовый класс для JPA-сущностей с общими техническими полями.
  */
 @Getter
 @MappedSuperclass
@@ -24,7 +24,7 @@ public abstract class BaseEntity {
     private LocalDateTime createdAt;
 
     /**
-     * Инициализирует поля аудита перед вставкой записи в базу данных.
+     * Заполняет дату создания перед первым сохранением сущности.
      */
     @PrePersist
     protected void prePersistBase() {

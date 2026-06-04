@@ -1,13 +1,14 @@
 package userservice.exception;
 
 /**
- * Исключение, сигнализирующее об отсутствии запрошенной сущности.
+ * Исключение для ситуации, когда запрошенная сущность не найдена.
  */
-public class EntityNotFoundException extends ServiceException {
+public class EntityNotFoundException extends RuntimeException {
+
     /**
-     * Создаёт исключение с сообщением.
+     * Создает исключение с сообщением для клиента.
      *
-     * @param message безопасное для пользователя сообщение
+     * @param message описание ошибки
      */
     public EntityNotFoundException(String message) {
         super(message);
