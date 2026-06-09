@@ -1,36 +1,20 @@
 package userservice;
 
-import userservice.config.DatabaseMigrator;
-import userservice.config.HibernateUtil;
-import userservice.constants.Messages;
-import userservice.ui.ConsoleApp;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Точка входа в консольное приложение.
+ * Точка входа в Spring Boot приложение user-service.
  */
-public final class Main {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
-
-    private Main() {
-    }
+@SpringBootApplication
+public class Main {
 
     /**
-     * Запускает приложение, выполняет миграции базы данных и открывает консольное меню.
+     * Запускает embedded web-server и Spring context.
      *
      * @param args аргументы командной строки
      */
     public static void main(String[] args) {
-        try {
-            DatabaseMigrator.migrate();
-            HibernateUtil.getSessionFactory();
-            new ConsoleApp().run();
-        } catch (RuntimeException e) {
-            LOGGER.error("Критическая ошибка запуска приложения.", e);
-            System.err.println(Messages.formatError(Messages.CRITICAL_STARTUP_ERROR));
-        } finally {
-            HibernateUtil.shutdown();
-        }
+        SpringApplication.run(Main.class, args);
     }
 }

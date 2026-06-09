@@ -8,20 +8,18 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Check;
 
 /**
- * Сущность пользователя.
+ * JPA-сущность пользователя, которая хранится в таблице {@code users}.
  */
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Entity(name = "UserEntity")
+@Entity
 @Table(
         name = "users",
         uniqueConstraints = @UniqueConstraint(name = "uk_users_email", columnNames = "email")
 )
-@Check(constraints = "age between 1 and 130")
 public class UserEntity extends BaseEntity {
     @Column(nullable = false, length = 100)
     private String name;
@@ -32,7 +30,13 @@ public class UserEntity extends BaseEntity {
     @Column(nullable = false)
     private Integer age;
 
-    // Создаёт нового пользователя.
+    /**
+     * Создает пользователя для сохранения в базе.
+     *
+     * @param name имя пользователя
+     * @param email нормализованный e-mail пользователя
+     * @param age возраст пользователя
+     */
     public UserEntity(String name, String email, Integer age) {
         this.name = name;
         this.email = email;

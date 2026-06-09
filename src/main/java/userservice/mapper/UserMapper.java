@@ -1,38 +1,73 @@
 package userservice.mapper;
 
-import lombok.NonNull;
-import userservice.dto.UserCreateRequest;
+import org.springframework.stereotype.Component;
+import userservice.dto.UserResponse;
 import userservice.dto.UserUpdateRequest;
 import userservice.entity.UserEntity;
 
+import java.util.Locale;
+
 /**
- * Преобразует DTO-запросы в сущности {@link UserEntity}.
+ * Преобразует данные между DTO и JPA-сущностью пользователя.
  */
-public final class UserMapper {
-    private UserMapper() {
-    }
+@Component
+public class UserMapper {
 
     /**
-     * Преобразует запрос на создание в новую сущность пользователя.
+     * Создает сущность пользователя из уже подготовленных данных.
      *
-     * @param request валидированный запрос на создание
+     * @param name имя пользователя
+     * @param email e-mail пользователя
+     * @param age возраст пользователя
      * @return новая сущность пользователя
      */
-    public static UserEntity toEntity(@NonNull UserCreateRequest request) {
-        return new UserEntity(request.name(), request.email(), request.age());
+    public UserEntity toEntity(String name, String email, Integer age) {
+        return new UserEntity(
+                normalizeName(name),
+                normalizeEmail(email),
+                age
+        );
     }
 
     /**
-     * Применяет запрос на обновление к существующей сущности.
+     * Создает DTO ответа из сущности.
      *
-     * @param userEntity существующий пользователь
-     * @param request валидированный запрос на обновление
-     * @return обновлённая сущность пользователя
+     * @param userEntity сущность пользователя из базы
+     * @return DTO с данными, которые можно вернуть клиенту
      */
-    public static UserEntity applyUpdate(@NonNull UserEntity userEntity, @NonNull UserUpdateRequest request) {
-        userEntity.setName(request.name());
-        userEntity.setEmail(request.email());
+    public UserResponse toResponse(UserEntity userEntity) {
+        return new UserResponse(
+                userEntity.getId(),
+                userEntity.getName(),
+                userEntity.getEmail(),
+                userEntity.getAge(),
+                userEntity.getCreatedAt()
+        );
+    }
+
+    /**
+     * Обновляет изменяемые поля сущности данными из request DTO.
+     *
+     * @param userEntity существующая сущность пользователя
+     * @param request DTO с новыми данными
+     */
+    public void updateEntity(UserEntity userEntity, UserUpdateRequest request) {
+        userEntity.setName(normalizeName(request.name()));
+        userEntity.setEmail(normalizeEmail(request.email()));
         userEntity.setAge(request.age());
-        return userEntity;
+    }
+
+    /**
+     * Нормализует e-mail: убирает пробелы по краям и приводит к нижнему регистру.
+     *
+     * @param email исходный e-mail
+     * @return нормализованный e-mail
+     */
+    public String normalizeEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizeName(String name) {
+        return name.trim();
     }
 }
