@@ -57,6 +57,10 @@ public final class Messages {
     public static final String STARTUP_HIBERNATE_FAILED = "Не удалось инициализировать Hibernate.";
     public static final String CRITICAL_STARTUP_ERROR = "Критическая ошибка запуска приложения. Проверьте настройки базы данных и логи.";
 
+    public static final String NOTIFICATION_EVENT_PUBLISH_FAILED = "Не удалось отправить событие уведомления.";
+    public static final String NULL_NOTIFICATION_EVENT = "Событие уведомления не должно быть пустым.";
+
+    public static final String DATABASE_ERROR = "Ошибка БД";
     private Messages() {
     }
 

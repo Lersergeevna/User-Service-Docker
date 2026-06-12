@@ -16,7 +16,11 @@ import java.util.Optional;
  */
 public class UserDaoImpl implements UserDao {
     /**
-     * {@inheritDoc}
+     * Сохраняет пользователя в базе данных и возвращает его идентификатор.
+     *
+     * @param userEntity сохраняемая сущность пользователя
+     * @return идентификатор сохранённого пользователя
+     * @throws DataAccessException если сохранение завершилось ошибкой
      */
     @Override
     public Long save(@NonNull UserEntity userEntity) {
@@ -31,7 +35,11 @@ public class UserDaoImpl implements UserDao {
     }
 
     /**
-     * {@inheritDoc}
+     * Ищет пользователя по идентификатору.
+     *
+     * @param id идентификатор пользователя
+     * @return найденный пользователь или пустой Optional
+     * @throws DataAccessException если поиск завершился ошибкой
      */
     @Override
     public Optional<UserEntity> findById(@NonNull Long id) {
@@ -45,7 +53,11 @@ public class UserDaoImpl implements UserDao {
     }
 
     /**
-     * {@inheritDoc}
+     * Ищет пользователя по e-mail.
+     *
+     * @param email e-mail пользователя
+     * @return найденный пользователь или пустой Optional
+     * @throws DataAccessException если поиск завершился ошибкой
      */
     @Override
     public Optional<UserEntity> findByEmail(@NonNull String email) {
@@ -62,7 +74,10 @@ public class UserDaoImpl implements UserDao {
     }
 
     /**
-     * {@inheritDoc}
+     * Возвращает всех пользователей, отсортированных по идентификатору.
+     *
+     * @return список пользователей
+     * @throws DataAccessException если чтение списка завершилось ошибкой
      */
     @Override
     public List<UserEntity> findAll() {
@@ -77,7 +92,10 @@ public class UserDaoImpl implements UserDao {
     }
 
     /**
-     * {@inheritDoc}
+     * Возвращает количество пользователей в базе данных.
+     *
+     * @return количество пользователей
+     * @throws DataAccessException если подсчёт завершился ошибкой
      */
     @Override
     public long count() {
@@ -92,7 +110,11 @@ public class UserDaoImpl implements UserDao {
     }
 
     /**
-     * {@inheritDoc}
+     * Проверяет существование пользователя по идентификатору.
+     *
+     * @param id идентификатор пользователя
+     * @return true, если пользователь существует
+     * @throws DataAccessException если проверка завершилась ошибкой
      */
     @Override
     public boolean existsById(@NonNull Long id) {
@@ -109,7 +131,11 @@ public class UserDaoImpl implements UserDao {
     }
 
     /**
-     * {@inheritDoc}
+     * Обновляет пользователя в базе данных.
+     *
+     * @param userEntity сущность пользователя с новыми значениями
+     * @return обновлённая сущность пользователя
+     * @throws DataAccessException если обновление завершилось ошибкой
      */
     @Override
     public UserEntity update(@NonNull UserEntity userEntity) {
@@ -121,7 +147,11 @@ public class UserDaoImpl implements UserDao {
     }
 
     /**
-     * {@inheritDoc}
+     * Удаляет пользователя по идентификатору.
+     *
+     * @param id идентификатор пользователя
+     * @return true, если пользователь был найден и удалён
+     * @throws DataAccessException если удаление завершилось ошибкой
      */
     @Override
     public boolean deleteById(@NonNull Long id) {
@@ -139,6 +169,13 @@ public class UserDaoImpl implements UserDao {
         }
     }
 
+    /**
+     * Создаёт DataAccessException с отдельным сообщением для нарушения ограничений БД.
+     *
+     * @param e исходная runtime-ошибка Hibernate или JDBC
+     * @param fallbackMessage сообщение по умолчанию
+     * @return исключение доступа к данным
+     */
     private DataAccessException dataAccessException(RuntimeException e, String fallbackMessage) {
         if (ExceptionUtils.isConstraintViolation(e)) {
             return new DataAccessException(Messages.DB_CONSTRAINT_FAILED, e);

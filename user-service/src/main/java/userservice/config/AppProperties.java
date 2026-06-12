@@ -13,9 +13,17 @@ public final class AppProperties {
     private static final String DB_PASSWORD_PROPERTY = "db.password";
     private static final String DB_PASSWORD_ENV = "DB_PASSWORD";
 
+    private static final String KAFKA_BOOTSTRAP_SERVERS_PROPERTY = "kafka.bootstrap.servers";
+    private static final String KAFKA_BOOTSTRAP_SERVERS_ENV = "KAFKA_BOOTSTRAP_SERVERS";
+
+    private static final String KAFKA_USER_NOTIFICATIONS_TOPIC_PROPERTY = "kafka.topic.user.notifications";
+    private static final String KAFKA_USER_NOTIFICATIONS_TOPIC_ENV = "KAFKA_USER_NOTIFICATIONS_TOPIC";
+
     private static final String DEFAULT_DB_URL = "jdbc:postgresql://localhost:5432/user_service_db";
     private static final String DEFAULT_DB_USERNAME = "postgres";
     private static final String DEFAULT_DB_PASSWORD = "postgres";
+    private static final String DEFAULT_KAFKA_BOOTSTRAP_SERVERS = "localhost:9092";
+    private static final String DEFAULT_KAFKA_USER_NOTIFICATIONS_TOPIC = "user-notifications";
 
     private AppProperties() {
     }
@@ -45,6 +53,32 @@ public final class AppProperties {
      */
     public static String dbPassword() {
         return read(DB_PASSWORD_PROPERTY, DB_PASSWORD_ENV, DEFAULT_DB_PASSWORD);
+    }
+
+    /**
+     * Возвращает адрес Kafka bootstrap servers.
+     *
+     * @return адрес Kafka
+     */
+    public static String kafkaBootstrapServers() {
+        return read(
+                KAFKA_BOOTSTRAP_SERVERS_PROPERTY,
+                KAFKA_BOOTSTRAP_SERVERS_ENV,
+                DEFAULT_KAFKA_BOOTSTRAP_SERVERS
+        );
+    }
+
+    /**
+     * Возвращает название Kafka topic для уведомлений пользователей.
+     *
+     * @return название Kafka topic
+     */
+    public static String kafkaUserNotificationsTopic() {
+        return read(
+                KAFKA_USER_NOTIFICATIONS_TOPIC_PROPERTY,
+                KAFKA_USER_NOTIFICATIONS_TOPIC_ENV,
+                DEFAULT_KAFKA_USER_NOTIFICATIONS_TOPIC
+        );
     }
 
     private static String read(String systemKey, String envKey, String defaultValue) {
