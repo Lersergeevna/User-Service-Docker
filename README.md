@@ -1,142 +1,116 @@
-# user-service
+# user-notification-system
 
-Консольное Java-приложение без Spring для CRUD-операций над сущностью `User` с использованием Hibernate ORM и PostgreSQL.
-
-## Что реализовано
-
-- Hibernate ORM без Spring
-- PostgreSQL как основная БД
-- Запуск PostgreSQL через Docker Compose
-- Конфигурация Hibernate через `hibernate.cfg.xml`
-- DAO + Service + UI слои
-- CRUD для `User`: create, read, update, delete
-- Flyway-миграции
-- Логирование через SLF4J + Logback
-- Транзакции для операций записи
-- Обработка пользовательских, сервисных и database-ошибок
-- Maven для сборки и зависимостей
-- Unit-тесты service-слоя
-
-## Структура
+Multi-module Maven-проект с двумя сервисами:
 
 ```text
-src/main/java/userservice
-├── config      # Hibernate, Flyway, настройки подключения
-├── dao         # DAO-интерфейс и Hibernate-реализация
-├── dto         # DTO для создания и обновления пользователя
-├── entity      # Hibernate entity
-├── exception   # пользовательские исключения
-├── mapper      # преобразование DTO <-> entity
-├── service     # бизнес-логика
-├── ui          # консольное меню и вывод
-└── util        # валидация, чтение ввода, работа с исключениями
+user-notification-system/
+├── pom.xml
+├── docker-compose.yml
+├── user-service/
+└── notification-service/
 ```
 
-## Требования
+## Модули
 
-- Java 21+
-- Maven
-- Docker Desktop, если PostgreSQL запускается через Docker
+### user-service
 
-## Быстрый запуск PostgreSQL через Docker
+Консольное Java/Hibernate-приложение для CRUD-операций над пользователями.
+После создания или удаления пользователя отправляет Kafka-событие в topic `user-notifications`.
+
+Событие содержит:
+
+```json
+{
+  "operation": "CREATED",
+  "email": "user@example.com"
+}
+```
+
+Поддерживаемые операции:
+
+- `CREATED`
+- `DELETED`
+
+### notification-service
+
+Spring Boot микросервис, который:
+
+- читает события из Kafka;
+- отправляет email через SMTP;
+- предоставляет REST API для ручной отправки уведомлений;
+- хранит статусы отправки CREATED-уведомлений;
+- повторно отправляет неотправленные CREATED-уведомления через scheduler.
+
+## Запуск тестов
 
 Из корня проекта:
 
 ```bash
-docker compose up -d
+mvn test
 ```
 
-Контейнер создаёт PostgreSQL со значениями по умолчанию:
+Отдельно по модулям:
+
+```bash
+mvn -pl user-service test
+mvn -pl notification-service test
+```
+
+## Запуск через Docker Compose
+
+Оба приложения и инфраструктура запускаются из корня проекта:
+
+```bash
+docker compose up --build
+```
+
+Будут подняты:
+
+- `user-service`
+- `notification-service`
+- PostgreSQL для user-service
+- PostgreSQL для notification-service
+- Kafka
+- MailHog
+
+MailHog доступен по адресу:
 
 ```text
-DB_URL=jdbc:postgresql://localhost:5434/user_service_db
-DB_USERNAME=postgres
-DB_PASSWORD=postgres
+http://localhost:8025
 ```
 
-Проверить контейнер:
-
-```bash
-docker ps
-```
-
-Остановить контейнер:
-
-```bash
-docker compose down
-```
-
-Остановить контейнер и удалить данные БД:
-
-```bash
-docker compose down -v
-```
-
-## Запуск приложения
-
-### Git Bash / Linux / macOS
-
-```bash
-DB_URL="jdbc:postgresql://localhost:5432/user_service_db" \
-DB_USERNAME="postgres" \
-DB_PASSWORD="postgres" \
-mvn clean test exec:java
-```
-
-Или, если используются значения по умолчанию из `AppProperties`:
-
-```bash
-mvn clean test exec:java
-```
-
-### Windows PowerShell
-
-```powershell
-$env:DB_URL="jdbc:postgresql://localhost:5434/user_service_db"
-$env:DB_USERNAME="postgres"
-$env:DB_PASSWORD="postgres"
-mvn clean test exec:java
-```
-
-## Ручное создание БД без Docker
-
-Если PostgreSQL установлен локально без Docker:
-
-```sql
-CREATE DATABASE user_service_db;
-```
-
-После этого передай свои значения подключения через переменные окружения или системные свойства.
-
-## Системные свойства вместо переменных окружения
-
-```bash
-mvn exec:java \
-  -Ddb.url="jdbc:postgresql://localhost:5434/user_service_db" \
-  -Ddb.username="postgres" \
-  -Ddb.password="postgres"
-```
-
-## Сущность User
-
-Таблица `users` создаётся Flyway-миграцией:
+## Порты
 
 ```text
-id         bigserial primary key
-name       varchar(100) not null
-email      varchar(150) not null unique
-age        integer not null check 1..130
-created_at timestamp not null
+user-service PostgreSQL:        localhost:5432
+notification-service PostgreSQL: localhost:5435
+Kafka:                          localhost:9092
+MailHog SMTP:                   localhost:1025
+MailHog UI:                     localhost:8025
+notification-service API:       localhost:8081
 ```
 
-## Замечания по безопасности и устойчивости
+## REST API notification-service
 
-- Spring не используется.
-- SQL строится через Hibernate и bind-параметры, пользовательский ввод не склеивается с SQL строками.
-- SQL и bind-параметры не логируются по умолчанию.
-- Пароль БД не хранится в бизнес-коде; его можно передать через env/system properties.
-- Технические детали ошибок пишутся в лог, а пользователю показываются безопасные сообщения.
-- `Session` закрываются через try-with-resources.
-- `SessionFactory` создаётся один раз и закрывается при завершении приложения.
-- Уникальность e-mail проверяется и в сервисе, и на уровне БД через unique constraint.
-- Валидация Java-кода согласована с SQL-ограничениями.
+```http
+POST /api/v1/notifications
+Content-Type: application/json
+```
+
+Пример запроса:
+
+```json
+{
+  "operation": "CREATED",
+  "email": "test@example.com"
+}
+```
+
+Успешный ответ:
+
+```json
+{
+  "email": "test@example.com",
+  "status": "SENT"
+}
+```
