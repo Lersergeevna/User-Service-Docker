@@ -16,7 +16,11 @@ public final class Messages {
     public static final String NULL_REQUEST = "Тело запроса отсутствует или некорректно.";
     public static final String VALIDATION_FAILED = "Ошибка валидации данных.";
     public static final String INTERNAL_ERROR = "Внутренняя ошибка сервера.";
-    public static final String NOTIFICATION_EVENT_PUBLISH_FAILED = "Не удалось отправить событие уведомления.";
+
+    public static final String NOTIFICATION_EVENT_PUBLISH_FAILED =
+            "Не удалось отправить событие уведомления для email={}.";
+    public static final String NOTIFICATION_EVENT_PUBLISHED =
+            "Событие уведомления успешно отправлено для email={}.";
 
     private Messages() {
     }

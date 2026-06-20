@@ -8,16 +8,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.test.util.ReflectionTestUtils;
 import userservice.event.UserNotificationEvent;
 import userservice.event.UserOperation;
-import userservice.exception.NotificationEventPublishException;
 
 import java.util.concurrent.CompletableFuture;
 
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,12 +33,11 @@ class KafkaNotificationEventPublisherTest {
     private KafkaNotificationEventPublisher publisher;
 
     /**
-     * Создает publisher и задает topic через test reflection, потому что в production он приходит из application.yml.
+     * Создает publisher с тестовым topic.
      */
     @BeforeEach
     void setUp() {
-        publisher = new KafkaNotificationEventPublisher(kafkaTemplate);
-        ReflectionTestUtils.setField(publisher, "topic", TOPIC);
+        publisher = new KafkaNotificationEventPublisher(kafkaTemplate, TOPIC);
     }
 
     /**
@@ -68,16 +65,34 @@ class KafkaNotificationEventPublisherTest {
     }
 
     /**
-     * Проверяет, что ошибка Kafka преобразуется в custom exception приложения.
+     * Проверяет, что асинхронная ошибка Kafka не выбрасывается наружу.
      */
     @Test
-    void publish_shouldThrowCustomException_whenKafkaFails() {
+    void publish_shouldNotThrowException_whenKafkaFutureFails() {
         UserNotificationEvent event = new UserNotificationEvent(UserOperation.CREATED, "alice@example.com");
         CompletableFuture<SendResult<String, UserNotificationEvent>> failedFuture = new CompletableFuture<>();
-        failedFuture.completeExceptionally(new IllegalStateException("Kafka недоступна"));
 
         when(kafkaTemplate.send(eq(TOPIC), eq("alice@example.com"), eq(event))).thenReturn(failedFuture);
 
-        assertThrows(NotificationEventPublishException.class, () -> publisher.publish(event));
+        assertDoesNotThrow(() -> publisher.publish(event));
+
+        failedFuture.completeExceptionally(new IllegalStateException("Kafka недоступна"));
+
+        verify(kafkaTemplate).send(eq(TOPIC), eq("alice@example.com"), eq(event));
+    }
+
+    /**
+     * Проверяет, что мгновенная ошибка KafkaTemplate тоже не выбрасывается наружу.
+     */
+    @Test
+    void publish_shouldNotThrowException_whenKafkaTemplateThrowsImmediately() {
+        UserNotificationEvent event = new UserNotificationEvent(UserOperation.CREATED, "alice@example.com");
+
+        when(kafkaTemplate.send(eq(TOPIC), eq("alice@example.com"), eq(event)))
+                .thenThrow(new IllegalStateException("Kafka producer не настроен"));
+
+        assertDoesNotThrow(() -> publisher.publish(event));
+
+        verify(kafkaTemplate).send(eq(TOPIC), eq("alice@example.com"), eq(event));
     }
 }
