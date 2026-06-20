@@ -1,6 +1,7 @@
 package userservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import userservice.constants.Messages;
@@ -8,14 +9,13 @@ import userservice.dto.UserCreateRequest;
 import userservice.dto.UserResponse;
 import userservice.dto.UserUpdateRequest;
 import userservice.entity.UserEntity;
-import userservice.exception.DuplicateEmailException;
-import userservice.exception.EntityNotFoundException;
 import userservice.event.UserNotificationEvent;
 import userservice.event.UserOperation;
+import userservice.exception.DuplicateEmailException;
+import userservice.exception.EntityNotFoundException;
 import userservice.mapper.UserMapper;
 import userservice.repository.UserRepository;
 import userservice.service.UserService;
-import userservice.service.notification.NotificationEventPublisher;
 
 import java.util.List;
 
@@ -26,9 +26,10 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final NotificationEventPublisher notificationEventPublisher;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * Создает пользователя, предварительно проверив уникальность e-mail.
@@ -46,7 +47,11 @@ public class UserServiceImpl implements UserService {
 
         UserEntity userEntity = userMapper.toEntity(request.name(), email, request.age());
         UserEntity savedUser = userRepository.save(userEntity);
-        notificationEventPublisher.publish(new UserNotificationEvent(UserOperation.CREATED, savedUser.getEmail()));
+
+        applicationEventPublisher.publishEvent(
+                new UserNotificationEvent(UserOperation.CREATED, savedUser.getEmail())
+        );
+
         return userMapper.toResponse(savedUser);
     }
 
@@ -103,13 +108,17 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(long id) {
         UserEntity existingUser = findUserById(id);
         userRepository.delete(existingUser);
-        notificationEventPublisher.publish(new UserNotificationEvent(UserOperation.DELETED, existingUser.getEmail()));
+
+        applicationEventPublisher.publishEvent(
+                new UserNotificationEvent(UserOperation.DELETED, existingUser.getEmail())
+        );
     }
 
     private UserEntity findUserById(long id) {
         if (id <= 0) {
             throw new EntityNotFoundException(Messages.USER_NOT_FOUND_BY_ID.formatted(id));
         }
+
         return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(Messages.USER_NOT_FOUND_BY_ID.formatted(id)));
     }
