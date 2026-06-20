@@ -8,10 +8,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import userservice.dto.UserCreateRequest;
 import userservice.dto.UserUpdateRequest;
 import userservice.repository.UserRepository;
+import userservice.service.notification.NotificationEventPublisher;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
@@ -45,6 +47,9 @@ class UserControllerIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @MockitoBean
+    private NotificationEventPublisher notificationEventPublisher;
 
     /**
      * Очищает таблицу перед каждым тестом, чтобы тесты не зависели друг от друга.
