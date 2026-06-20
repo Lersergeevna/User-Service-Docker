@@ -20,6 +20,7 @@ public final class Messages {
     public static final String VALIDATION_FAILED = "Ошибка валидации данных.";
     public static final String NULL_REQUEST = "Тело запроса отсутствует или некорректно.";
     public static final String INTERNAL_ERROR = "Внутренняя ошибка сервера.";
+    public static final String UNEXPECTED_ERROR_LOG = "Непредвиденная ошибка при обработке запроса.";
     public static final String STATUS_SENT = "ОТПРАВЛЕНО";
 
     private Messages() {

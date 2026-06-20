@@ -1,12 +1,37 @@
 spring:
+  application:
+    name: user-service-test
+
   datasource:
     url: jdbc:h2:mem:user_service_test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
     driver-class-name: org.h2.Driver
     username: sa
     password:
+
   jpa:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
   flyway:
     enabled: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+server:
+  error:
+    include-stacktrace: never
+
+app:
+  kafka:
+    topics:
+      user-notifications: user-notifications

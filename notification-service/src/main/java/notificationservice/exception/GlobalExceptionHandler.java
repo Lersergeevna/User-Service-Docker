@@ -1,5 +1,6 @@
 package notificationservice.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import notificationservice.constants.Messages;
 import notificationservice.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import java.util.List;
 /**
  * Централизованно преобразует исключения notification-service в HTTP-ответы.
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -48,6 +50,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception e) {
+        log.error(Messages.UNEXPECTED_ERROR_LOG, e);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR, List.of());
     }
 
