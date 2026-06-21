@@ -17,7 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Интеграционные тесты отправки email через реальный SMTP-сервер GreenMail.
+ * Интеграционные тесты отправки email-уведомлений.
  */
 @SpringBootTest
 @ActiveProfiles("test")
@@ -36,28 +36,38 @@ class EmailNotificationServiceIntegrationTest {
     }
 
     @Test
-    void sendNotification_shouldSendCreatedAccountEmail() throws Exception {
-        emailNotificationService.sendNotification(new UserNotificationEvent(UserOperation.CREATED, "alice@example.com"));
+    void sendNotification_shouldSendCreatedEmail() throws Exception {
+        UserNotificationEvent event = new UserNotificationEvent(
+                "event-created-email-1",
+                UserOperation.CREATED,
+                "created@example.com"
+        );
 
-        MimeMessage[] messages = greenMail.getReceivedMessages();
+        emailNotificationService.sendNotification(event);
 
-        assertThat(messages).hasSize(1);
-        assertThat(messages[0].getAllRecipients()[0].toString()).isEqualTo("alice@example.com");
-        assertThat(messages[0].getSubject()).isEqualTo(Messages.ACCOUNT_CREATED_SUBJECT);
-        assertThat(messages[0].getContent().toString())
-                .contains(Messages.ACCOUNT_CREATED_TEXT);
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+
+        assertThat(receivedMessages).hasSize(1);
+        assertThat(receivedMessages[0].getAllRecipients()[0].toString()).isEqualTo("created@example.com");
+        assertThat(receivedMessages[0].getSubject()).isEqualTo(Messages.ACCOUNT_CREATED_SUBJECT);
+        assertThat(receivedMessages[0].getContent().toString()).contains(Messages.ACCOUNT_CREATED_TEXT);
     }
 
     @Test
-    void sendNotification_shouldSendDeletedAccountEmail() throws Exception {
-        emailNotificationService.sendNotification(new UserNotificationEvent(UserOperation.DELETED, "bob@example.com"));
+    void sendNotification_shouldSendDeletedEmail() throws Exception {
+        UserNotificationEvent event = new UserNotificationEvent(
+                "event-deleted-email-1",
+                UserOperation.DELETED,
+                "deleted@example.com"
+        );
 
-        MimeMessage[] messages = greenMail.getReceivedMessages();
+        emailNotificationService.sendNotification(event);
 
-        assertThat(messages).hasSize(1);
-        assertThat(messages[0].getAllRecipients()[0].toString()).isEqualTo("bob@example.com");
-        assertThat(messages[0].getSubject()).isEqualTo(Messages.ACCOUNT_DELETED_SUBJECT);
-        assertThat(messages[0].getContent().toString())
-                .contains(Messages.ACCOUNT_DELETED_TEXT);
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+
+        assertThat(receivedMessages).hasSize(1);
+        assertThat(receivedMessages[0].getAllRecipients()[0].toString()).isEqualTo("deleted@example.com");
+        assertThat(receivedMessages[0].getSubject()).isEqualTo(Messages.ACCOUNT_DELETED_SUBJECT);
+        assertThat(receivedMessages[0].getContent().toString()).contains(Messages.ACCOUNT_DELETED_TEXT);
     }
 }

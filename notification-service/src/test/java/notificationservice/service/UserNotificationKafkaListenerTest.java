@@ -11,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.Mockito.verify;
 
 /**
- * Unit-тест Kafka listener без запуска Kafka broker.
+ * Unit-тесты Kafka listener-а.
  */
 @ExtendWith(MockitoExtension.class)
 class UserNotificationKafkaListenerTest {
@@ -22,12 +22,13 @@ class UserNotificationKafkaListenerTest {
     @InjectMocks
     private UserNotificationKafkaListener listener;
 
-    /**
-     * Проверяет, что listener передает полученное событие в сервис обработки уведомлений.
-     */
     @Test
     void listen_shouldDelegateEventToNotificationMessageService() {
-        UserNotificationEvent event = new UserNotificationEvent(UserOperation.CREATED, "alice@example.com");
+        UserNotificationEvent event = new UserNotificationEvent(
+                "event-listener-1",
+                UserOperation.CREATED,
+                "alice@example.com"
+        );
 
         listener.listen(event);
 

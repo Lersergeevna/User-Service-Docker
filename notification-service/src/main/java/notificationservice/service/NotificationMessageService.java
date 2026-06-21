@@ -26,6 +26,7 @@ public class NotificationMessageService {
 
     /**
      * Обрабатывает событие из Kafka.
+     * Повторное событие с уже успешно обработанным eventId не отправляет письмо повторно.
      *
      * @param event событие пользователя
      */
@@ -33,17 +34,14 @@ public class NotificationMessageService {
     public void processKafkaEvent(UserNotificationEvent event) {
         validateEvent(event);
 
-        if (event.operation() == UserOperation.CREATED) {
-            processCreatedEvent(event);
+        NotificationMessageEntity message = notificationMessageRepository.findByEventId(event.eventId())
+                .orElseGet(() -> createPendingMessage(event));
+
+        if (message.getStatus() == NotificationStatus.SENT) {
             return;
         }
 
-        if (event.operation() == UserOperation.DELETED) {
-            emailNotificationService.sendNotification(event);
-            return;
-        }
-
-        throw new InvalidNotificationEventException(Messages.INVALID_NOTIFICATION_EVENT);
+        trySendMessage(message);
     }
 
     /**
@@ -57,24 +55,28 @@ public class NotificationMessageService {
                         List.of(NotificationStatus.PENDING, NotificationStatus.FAILED)
                 );
 
-        messages.forEach(this::trySendCreatedMessage);
+        messages.forEach(this::trySendMessage);
     }
 
-    private void processCreatedEvent(UserNotificationEvent event) {
+    private NotificationMessageEntity createPendingMessage(UserNotificationEvent event) {
         NotificationMessageEntity message = new NotificationMessageEntity(
+                event.eventId(),
                 event.email(),
-                UserOperation.CREATED,
+                event.operation(),
                 NotificationStatus.PENDING
         );
 
-        NotificationMessageEntity savedMessage = notificationMessageRepository.save(message);
-        trySendCreatedMessage(savedMessage);
+        return notificationMessageRepository.save(message);
     }
 
-    private void trySendCreatedMessage(NotificationMessageEntity message) {
+    private void trySendMessage(NotificationMessageEntity message) {
         try {
             emailNotificationService.sendNotification(
-                    new UserNotificationEvent(message.getOperation(), message.getEmail())
+                    new UserNotificationEvent(
+                            message.getEventId(),
+                            message.getOperation(),
+                            message.getEmail()
+                    )
             );
             message.markSent();
         } catch (RuntimeException e) {
@@ -85,7 +87,12 @@ public class NotificationMessageService {
     }
 
     private void validateEvent(UserNotificationEvent event) {
-        if (event == null || event.operation() == null || event.email() == null || event.email().isBlank()) {
+        if (event == null
+                || event.eventId() == null
+                || event.eventId().isBlank()
+                || event.operation() == null
+                || event.email() == null
+                || event.email().isBlank()) {
             throw new InvalidNotificationEventException(Messages.INVALID_NOTIFICATION_EVENT);
         }
     }

@@ -26,6 +26,8 @@ import static org.mockito.Mockito.when;
 class KafkaNotificationEventPublisherTest {
 
     private static final String TOPIC = "user-notifications";
+    private static final String EVENT_ID = "event-1";
+    private static final String EMAIL = "alice@example.com";
 
     @Mock
     private KafkaTemplate<String, UserNotificationEvent> kafkaTemplate;
@@ -45,10 +47,10 @@ class KafkaNotificationEventPublisherTest {
      */
     @Test
     void publish_shouldSendEventToKafkaTopic() {
-        UserNotificationEvent event = new UserNotificationEvent(UserOperation.CREATED, "alice@example.com");
+        UserNotificationEvent event = new UserNotificationEvent(EVENT_ID, UserOperation.CREATED, EMAIL);
         CompletableFuture<SendResult<String, UserNotificationEvent>> future = CompletableFuture.completedFuture(null);
 
-        when(kafkaTemplate.send(eq(TOPIC), eq("alice@example.com"), eq(event))).thenReturn(future);
+        when(kafkaTemplate.send(eq(TOPIC), eq(EMAIL), eq(event))).thenReturn(future);
 
         publisher.publish(event);
 
@@ -56,12 +58,13 @@ class KafkaNotificationEventPublisherTest {
 
         verify(kafkaTemplate).send(
                 eq(TOPIC),
-                eq("alice@example.com"),
+                eq(EMAIL),
                 eventCaptor.capture()
         );
 
+        assertEquals(EVENT_ID, eventCaptor.getValue().eventId());
         assertEquals(UserOperation.CREATED, eventCaptor.getValue().operation());
-        assertEquals("alice@example.com", eventCaptor.getValue().email());
+        assertEquals(EMAIL, eventCaptor.getValue().email());
     }
 
     /**
@@ -69,16 +72,16 @@ class KafkaNotificationEventPublisherTest {
      */
     @Test
     void publish_shouldNotThrowException_whenKafkaFutureFails() {
-        UserNotificationEvent event = new UserNotificationEvent(UserOperation.CREATED, "alice@example.com");
+        UserNotificationEvent event = new UserNotificationEvent(EVENT_ID, UserOperation.CREATED, EMAIL);
         CompletableFuture<SendResult<String, UserNotificationEvent>> failedFuture = new CompletableFuture<>();
 
-        when(kafkaTemplate.send(eq(TOPIC), eq("alice@example.com"), eq(event))).thenReturn(failedFuture);
+        when(kafkaTemplate.send(eq(TOPIC), eq(EMAIL), eq(event))).thenReturn(failedFuture);
 
         assertDoesNotThrow(() -> publisher.publish(event));
 
         failedFuture.completeExceptionally(new IllegalStateException("Kafka недоступна"));
 
-        verify(kafkaTemplate).send(eq(TOPIC), eq("alice@example.com"), eq(event));
+        verify(kafkaTemplate).send(eq(TOPIC), eq(EMAIL), eq(event));
     }
 
     /**
@@ -86,13 +89,13 @@ class KafkaNotificationEventPublisherTest {
      */
     @Test
     void publish_shouldNotThrowException_whenKafkaTemplateThrowsImmediately() {
-        UserNotificationEvent event = new UserNotificationEvent(UserOperation.CREATED, "alice@example.com");
+        UserNotificationEvent event = new UserNotificationEvent(EVENT_ID, UserOperation.CREATED, EMAIL);
 
-        when(kafkaTemplate.send(eq(TOPIC), eq("alice@example.com"), eq(event)))
+        when(kafkaTemplate.send(eq(TOPIC), eq(EMAIL), eq(event)))
                 .thenThrow(new IllegalStateException("Kafka producer не настроен"));
 
         assertDoesNotThrow(() -> publisher.publish(event));
 
-        verify(kafkaTemplate).send(eq(TOPIC), eq("alice@example.com"), eq(event));
+        verify(kafkaTemplate).send(eq(TOPIC), eq(EMAIL), eq(event));
     }
 }

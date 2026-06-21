@@ -18,6 +18,7 @@ import userservice.repository.UserRepository;
 import userservice.service.UserService;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Реализация бизнес-логики управления пользователями.
@@ -49,7 +50,7 @@ public class UserServiceImpl implements UserService {
         UserEntity savedUser = userRepository.save(userEntity);
 
         applicationEventPublisher.publishEvent(
-                new UserNotificationEvent(UserOperation.CREATED, savedUser.getEmail())
+                createNotificationEvent(UserOperation.CREATED, savedUser.getEmail())
         );
 
         return userMapper.toResponse(savedUser);
@@ -110,7 +111,15 @@ public class UserServiceImpl implements UserService {
         userRepository.delete(existingUser);
 
         applicationEventPublisher.publishEvent(
-                new UserNotificationEvent(UserOperation.DELETED, existingUser.getEmail())
+                createNotificationEvent(UserOperation.DELETED, existingUser.getEmail())
+        );
+    }
+
+    private UserNotificationEvent createNotificationEvent(UserOperation operation, String email) {
+        return new UserNotificationEvent(
+                UUID.randomUUID().toString(),
+                operation,
+                email
         );
     }
 

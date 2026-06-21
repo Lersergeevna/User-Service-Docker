@@ -9,6 +9,8 @@ import notificationservice.exception.InvalidNotificationEventException;
 import notificationservice.mail.EmailSender;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 /**
  * Бизнес-логика непосредственной отправки email-уведомлений.
  */
@@ -40,7 +42,12 @@ public class EmailNotificationService {
      * @return ответ с e-mail получателя и статусом отправки
      */
     public NotificationResponse sendNotification(NotificationRequest request) {
-        UserNotificationEvent event = new UserNotificationEvent(request.operation(), request.email());
+        UserNotificationEvent event = new UserNotificationEvent(
+                UUID.randomUUID().toString(),
+                request.operation(),
+                request.email()
+        );
+
         sendNotification(event);
         return new NotificationResponse(request.email(), Messages.STATUS_SENT);
     }

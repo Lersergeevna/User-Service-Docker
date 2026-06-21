@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 
 /**
  * Сущность уведомления, которое нужно отправить или уже отправили пользователю.
- * Хранится только для уведомлений, которым нужен контроль статуса и повторная отправка.
+ * Хранится для контроля статуса отправки и защиты от повторной обработки Kafka-событий.
  */
 @Getter
 @Setter
@@ -31,6 +31,9 @@ public class NotificationMessageEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "event_id", nullable = false, unique = true, length = 36)
+    private String eventId;
 
     @Column(nullable = false, length = 150)
     private String email;
@@ -58,11 +61,18 @@ public class NotificationMessageEntity {
     /**
      * Создаёт уведомление с начальным статусом.
      *
+     * @param eventId уникальный идентификатор Kafka-события
      * @param email e-mail получателя уведомления
      * @param operation операция, для которой отправляется уведомление
      * @param status начальный статус отправки
      */
-    public NotificationMessageEntity(String email, UserOperation operation, NotificationStatus status) {
+    public NotificationMessageEntity(
+            String eventId,
+            String email,
+            UserOperation operation,
+            NotificationStatus status
+    ) {
+        this.eventId = eventId;
         this.email = email;
         this.operation = operation;
         this.status = status;
