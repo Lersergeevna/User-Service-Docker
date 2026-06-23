@@ -102,13 +102,19 @@ class UserControllerIntegrationTest {
         createUserAndReturnId("Alice", "alice@example.com", 25);
         createUserAndReturnId("Bob", "bob@example.com", 31);
 
-        mockMvc.perform(get(USERS_URL))
+        mockMvc.perform(get("/api/v1/users"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[*].id", hasSize(2)))
-                .andExpect(jsonPath("$[*].name", containsInAnyOrder("Alice", "Bob")))
-                .andExpect(jsonPath("$[*].email", containsInAnyOrder("alice@example.com", "bob@example.com")))
-                .andExpect(jsonPath("$[*].age", containsInAnyOrder(25, 31)));
+                .andExpect(jsonPath("$._embedded.userResponseList", hasSize(2)))
+                .andExpect(jsonPath("$._embedded.userResponseList[0].name").value("Alice"))
+                .andExpect(jsonPath("$._embedded.userResponseList[0].email").value("alice@example.com"))
+                .andExpect(jsonPath("$._embedded.userResponseList[0]._links.self.href").exists())
+                .andExpect(jsonPath("$._embedded.userResponseList[0]._links.users.href").exists())
+                .andExpect(jsonPath("$._embedded.userResponseList[1].name").value("Bob"))
+                .andExpect(jsonPath("$._embedded.userResponseList[1].email").value("bob@example.com"))
+                .andExpect(jsonPath("$._embedded.userResponseList[1]._links.self.href").exists())
+                .andExpect(jsonPath("$._embedded.userResponseList[1]._links.users.href").exists())
+                .andExpect(jsonPath("$._links.self.href").exists())
+                .andExpect(jsonPath("$._links.create-user.href").exists());
     }
 
     /**
