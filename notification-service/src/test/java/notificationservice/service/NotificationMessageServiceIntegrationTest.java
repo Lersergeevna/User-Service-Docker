@@ -47,13 +47,14 @@ class NotificationMessageServiceIntegrationTest {
     @Test
     void processKafkaEvent_shouldSaveSentMessage_whenCreatedEventIsProcessed() throws Exception {
         notificationMessageService.processKafkaEvent(
-                new UserNotificationEvent(UserOperation.CREATED, "created@example.com")
+                new UserNotificationEvent("event-created-1", UserOperation.CREATED, "created@example.com")
         );
 
         List<NotificationMessageEntity> messages = notificationMessageRepository.findAll();
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
         assertThat(messages).hasSize(1);
+        assertThat(messages.get(0).getEventId()).isEqualTo("event-created-1");
         assertThat(messages.get(0).getEmail()).isEqualTo("created@example.com");
         assertThat(messages.get(0).getOperation()).isEqualTo(UserOperation.CREATED);
         assertThat(messages.get(0).getStatus()).isEqualTo(NotificationStatus.SENT);
@@ -66,12 +67,74 @@ class NotificationMessageServiceIntegrationTest {
     }
 
     @Test
-    void processKafkaEvent_shouldNotSaveMessage_whenDeletedEventIsProcessed() {
+    void processKafkaEvent_shouldSaveSentMessage_whenDeletedEventIsProcessed() {
         notificationMessageService.processKafkaEvent(
-                new UserNotificationEvent(UserOperation.DELETED, "deleted@example.com")
+                new UserNotificationEvent("event-deleted-1", UserOperation.DELETED, "deleted@example.com")
         );
 
-        assertThat(notificationMessageRepository.findAll()).isEmpty();
+        List<NotificationMessageEntity> messages = notificationMessageRepository.findAll();
+
+        assertThat(messages).hasSize(1);
+        assertThat(messages.get(0).getEventId()).isEqualTo("event-deleted-1");
+        assertThat(messages.get(0).getEmail()).isEqualTo("deleted@example.com");
+        assertThat(messages.get(0).getOperation()).isEqualTo(UserOperation.DELETED);
+        assertThat(messages.get(0).getStatus()).isEqualTo(NotificationStatus.SENT);
+        assertThat(messages.get(0).getRetryCount()).isZero();
+        assertThat(messages.get(0).getSentAt()).isNotNull();
+
         assertThat(greenMail.getReceivedMessages()).hasSize(1);
+    }
+
+    @Test
+    void processKafkaEvent_shouldNotSendEmailTwice_whenSameEventIdIsProcessedTwice() throws Exception {
+        UserNotificationEvent event = new UserNotificationEvent(
+                "duplicate-event-1",
+                UserOperation.CREATED,
+                "duplicate@example.com"
+        );
+
+        notificationMessageService.processKafkaEvent(event);
+        notificationMessageService.processKafkaEvent(event);
+
+        List<NotificationMessageEntity> messages = notificationMessageRepository.findAll();
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+
+        assertThat(messages).hasSize(1);
+        assertThat(messages.get(0).getEventId()).isEqualTo("duplicate-event-1");
+        assertThat(messages.get(0).getEmail()).isEqualTo("duplicate@example.com");
+        assertThat(messages.get(0).getOperation()).isEqualTo(UserOperation.CREATED);
+        assertThat(messages.get(0).getStatus()).isEqualTo(NotificationStatus.SENT);
+
+        assertThat(receivedMessages).hasSize(1);
+        assertThat(receivedMessages[0].getSubject()).isEqualTo(Messages.ACCOUNT_CREATED_SUBJECT);
+        assertThat(receivedMessages[0].getContent().toString()).contains(Messages.ACCOUNT_CREATED_TEXT);
+    }
+
+    @Test
+    void processKafkaEvent_shouldSendEmailsTwice_whenEventIdsAreDifferentForSameEmail() {
+        UserNotificationEvent firstEvent = new UserNotificationEvent(
+                "same-email-event-1",
+                UserOperation.CREATED,
+                "same-email@example.com"
+        );
+
+        UserNotificationEvent secondEvent = new UserNotificationEvent(
+                "same-email-event-2",
+                UserOperation.CREATED,
+                "same-email@example.com"
+        );
+
+        notificationMessageService.processKafkaEvent(firstEvent);
+        notificationMessageService.processKafkaEvent(secondEvent);
+
+        List<NotificationMessageEntity> messages = notificationMessageRepository.findAll();
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+
+        assertThat(messages).hasSize(2);
+        assertThat(messages)
+                .extracting(NotificationMessageEntity::getEventId)
+                .containsExactlyInAnyOrder("same-email-event-1", "same-email-event-2");
+
+        assertThat(receivedMessages).hasSize(2);
     }
 }

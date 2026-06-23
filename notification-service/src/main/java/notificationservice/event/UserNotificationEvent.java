@@ -7,6 +7,7 @@ package notificationservice.event;
  * @param email e-mail получателя
  */
 public record UserNotificationEvent(
+        String eventId,
         UserOperation operation,
         String email
 ) {

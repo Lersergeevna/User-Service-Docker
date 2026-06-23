@@ -7,6 +7,7 @@ package userservice.event;
  * @param email e-mail пользователя, которому нужно отправить уведомление
  */
 public record UserNotificationEvent(
+        String eventId,
         UserOperation operation,
         String email
 ) {

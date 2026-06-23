@@ -27,7 +27,11 @@ class UserNotificationEventListenerTest {
      */
     @Test
     void handle_shouldDelegateEventToNotificationPublisher() {
-        UserNotificationEvent event = new UserNotificationEvent(UserOperation.CREATED, "alice@example.com");
+        UserNotificationEvent event = new UserNotificationEvent(
+                "event-1",
+                UserOperation.CREATED,
+                "alice@example.com"
+        );
 
         listener.handle(event);
 
