@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import userservice.dto.UserResponse;
 import userservice.dto.UserUpdateRequest;
 import userservice.entity.UserEntity;
+import userservice.util.EmailMasker;
 
 import java.util.Locale;
 
@@ -39,7 +40,7 @@ public class UserMapper {
         return new UserResponse(
                 userEntity.getId(),
                 userEntity.getName(),
-                userEntity.getEmail(),
+                EmailMasker.mask(userEntity.getEmail()),
                 userEntity.getAge(),
                 userEntity.getCreatedAt()
         );

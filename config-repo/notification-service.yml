@@ -1,0 +1,57 @@
+server:
+  port: ${SERVER_PORT:8081}
+  error:
+    include-stacktrace: never
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5435/notification_service_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+
+  mail:
+    host: ${SPRING_MAIL_HOST:localhost}
+    port: ${SPRING_MAIL_PORT:1025}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: notification-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: notificationservice.event
+        spring.json.value.default.type: notificationservice.event.UserNotificationEvent
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+app:
+  mail:
+    from: ${APP_MAIL_FROM:no-reply@yoursite.local}
+  kafka:
+    topics:
+      user-notifications: ${APP_KAFKA_TOPICS_USER_NOTIFICATIONS:user-notifications}
+  scheduler:
+    created-notification-retry-delay-ms: ${APP_SCHEDULER_CREATED_NOTIFICATION_RETRY_DELAY_MS:60000}

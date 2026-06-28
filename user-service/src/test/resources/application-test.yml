@@ -1,6 +1,7 @@
 spring:
-  application:
-    name: user-service-test
+  cloud:
+    config:
+      enabled: false
 
   datasource:
     url: jdbc:h2:mem:user_service_test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
@@ -35,3 +36,7 @@ app:
   kafka:
     topics:
       user-notifications: user-notifications
+
+eureka:
+  client:
+    enabled: false
