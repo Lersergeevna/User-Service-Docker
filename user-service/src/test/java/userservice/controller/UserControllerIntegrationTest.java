@@ -60,10 +60,10 @@ class UserControllerIntegrationTest {
     }
 
     /**
-     * Проверяет создание пользователя и нормализацию e-mail.
+     * Проверяет создание пользователя и маскировку e-mail во внешнем REST-ответе.
      */
     @Test
-    void createUser_shouldReturnCreatedUser() throws Exception {
+    void createUser_shouldReturnCreatedUserWithMaskedEmail() throws Exception {
         UserCreateRequest request = new UserCreateRequest("Alice", "Alice@Example.com", 25);
 
         mockMvc.perform(post(USERS_URL)
@@ -72,7 +72,8 @@ class UserControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.name").value("Alice"))
-                .andExpect(jsonPath("$.email").value("alice@example.com"))
+                .andExpect(jsonPath("$.maskedEmail").value("a***@example.com"))
+                .andExpect(jsonPath("$.email").doesNotExist())
                 .andExpect(jsonPath("$.age").value(25));
     }
 
@@ -80,14 +81,15 @@ class UserControllerIntegrationTest {
      * Проверяет получение пользователя по id.
      */
     @Test
-    void getUserById_shouldReturnUser() throws Exception {
+    void getUserById_shouldReturnUserWithMaskedEmail() throws Exception {
         Long userId = createUserAndReturnId("Bob", "bob@example.com", 31);
 
         mockMvc.perform(get(USERS_URL + "/{id}", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.name").value("Bob"))
-                .andExpect(jsonPath("$.email").value("bob@example.com"))
+                .andExpect(jsonPath("$.maskedEmail").value("b***@example.com"))
+                .andExpect(jsonPath("$.email").doesNotExist())
                 .andExpect(jsonPath("$.age").value(31));
     }
 
@@ -98,19 +100,21 @@ class UserControllerIntegrationTest {
      * не обязан возвращать записи в фиксированном порядке.</p>
      */
     @Test
-    void getAllUsers_shouldReturnUsers() throws Exception {
+    void getAllUsers_shouldReturnUsersWithMaskedEmails() throws Exception {
         createUserAndReturnId("Alice", "alice@example.com", 25);
         createUserAndReturnId("Bob", "bob@example.com", 31);
 
-        mockMvc.perform(get("/api/v1/users"))
+        mockMvc.perform(get(USERS_URL))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._embedded.userResponseList", hasSize(2)))
-                .andExpect(jsonPath("$._embedded.userResponseList[0].name").value("Alice"))
-                .andExpect(jsonPath("$._embedded.userResponseList[0].email").value("alice@example.com"))
+                .andExpect(jsonPath("$._embedded.userResponseList[*].name",
+                        containsInAnyOrder("Alice", "Bob")))
+                .andExpect(jsonPath("$._embedded.userResponseList[*].maskedEmail",
+                        containsInAnyOrder("a***@example.com", "b***@example.com")))
+                .andExpect(jsonPath("$._embedded.userResponseList[0].email").doesNotExist())
+                .andExpect(jsonPath("$._embedded.userResponseList[1].email").doesNotExist())
                 .andExpect(jsonPath("$._embedded.userResponseList[0]._links.self.href").exists())
                 .andExpect(jsonPath("$._embedded.userResponseList[0]._links.users.href").exists())
-                .andExpect(jsonPath("$._embedded.userResponseList[1].name").value("Bob"))
-                .andExpect(jsonPath("$._embedded.userResponseList[1].email").value("bob@example.com"))
                 .andExpect(jsonPath("$._embedded.userResponseList[1]._links.self.href").exists())
                 .andExpect(jsonPath("$._embedded.userResponseList[1]._links.users.href").exists())
                 .andExpect(jsonPath("$._links.self.href").exists())
@@ -121,7 +125,7 @@ class UserControllerIntegrationTest {
      * Проверяет обновление данных пользователя.
      */
     @Test
-    void updateUser_shouldReturnUpdatedUser() throws Exception {
+    void updateUser_shouldReturnUpdatedUserWithMaskedEmail() throws Exception {
         Long userId = createUserAndReturnId("Alice", "alice@example.com", 25);
         UserUpdateRequest request = new UserUpdateRequest("Alice Updated", "alice.updated@example.com", 26);
 
@@ -131,7 +135,8 @@ class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.name").value("Alice Updated"))
-                .andExpect(jsonPath("$.email").value("alice.updated@example.com"))
+                .andExpect(jsonPath("$.maskedEmail").value("a***@example.com"))
+                .andExpect(jsonPath("$.email").doesNotExist())
                 .andExpect(jsonPath("$.age").value(26));
     }
 

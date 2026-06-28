@@ -1,18 +1,22 @@
 spring:
+  cloud:
+    config:
+      enabled: false
+
   datasource:
     url: jdbc:h2:mem:notification_service_test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    driver-class-name: org.h2.Driver
     username: sa
     password:
-    driver-class-name: org.h2.Driver
+
   jpa:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+
   flyway:
     enabled: true
-  kafka:
-    listener:
-      auto-startup: false
+
   mail:
     host: localhost
     port: 3025
@@ -25,11 +29,32 @@ spring:
           starttls:
             enable: false
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    listener:
+      auto-startup: false
+    consumer:
+      group-id: notification-service-test
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: notificationservice.event
+        spring.json.value.default.type: notificationservice.event.UserNotificationEvent
+
+server:
+  error:
+    include-stacktrace: never
+
 app:
   mail:
-    from: no-reply@test.local
+    from: no-reply@yoursite.local
   kafka:
     topics:
       user-notifications: user-notifications
   scheduler:
-    created-notification-retry-delay-ms: 3600000
+    created-notification-retry-delay-ms: 60000
+
+eureka:
+  client:
+    enabled: false
